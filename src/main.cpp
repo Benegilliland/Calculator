@@ -7,7 +7,6 @@
 
 /*
 To-do:
-- add support for decimal numbers
 - add scale variable
 - add GUI
 - add constants (e, pi) 
@@ -15,7 +14,7 @@ To-do:
 - make code safer (e.g., check stack before popping)
 */
 
-typedef mpz_class number;
+typedef mpf_class number;
 typedef number (*unary_operation)(number);
 typedef number (*binary_operation)(number, number);
 
@@ -60,9 +59,9 @@ main()
     number result;
     
     postfix = infix_to_postfix(infix);
-    result = postfix_calculate(postfix);
+    std::cout << infix_to_postfix(infix) << '\n';
 
-    //std::cout << infix_to_postfix(infix) << '\n';
+    result = postfix_calculate(postfix);
     std::cout << result << '\n';
   }
 
@@ -91,7 +90,7 @@ number divide(number left, number right)
 
 number fact(number n)
 {
-  return factorial(n);
+  return (number)factorial((mpz_class)n);
 }
 
 const Operator * 
@@ -117,7 +116,7 @@ infix_to_postfix(std::string infix)
     if (std::isdigit(c) || std::isspace(c) || c == '.') {
       postfix += c;
     }
-    else if (op = isoperator(c)) {
+    else if ((op = isoperator(c))) {
       if (op->c == '(') {
         operators.push(op);
         continue;
@@ -147,25 +146,32 @@ infix_to_postfix(std::string infix)
 number
 postfix_calculate(std::string postfix)
 {
-  mpz_class num = 0;
+  number num = 0;
   bool digit = false;
   static std::stack<number> nums;
+  size_t startPos, len;
 
-  for (char c : postfix) {
+  for (size_t i = 0; i < postfix.length(); i++) {
+    char c = postfix[i];
 
-    if (std::isdigit(c)) {
-      num = 10 * num + (c - '0');
-      digit = true;
+    if (std::isdigit(c) or c == '.') {
+      if (!digit) {
+        digit = true;
+        startPos = i;
+        len = 0;
+      }
+
+      len++;
     }
     else {
       if (digit) {
+        num = number(postfix.substr(startPos, len));
         nums.push(num);
-        num = 0;
         digit = false;
       }
 
       const Operator *op;
-      if (op = isoperator(c)) {
+      if ((op = isoperator(c))) {
         number result = 0;
         number left = nums.top();
         nums.pop();
@@ -185,8 +191,10 @@ postfix_calculate(std::string postfix)
 
   }
   
-  if (num != 0)
+  if (digit) {
+    num = number(postfix.substr(startPos, len));
     nums.push(num);
+  }
 
   if (!nums.empty())
     return nums.top();

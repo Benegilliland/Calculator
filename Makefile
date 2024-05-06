@@ -1,5 +1,5 @@
 CXX = g++
-CPPFLAGS = -O2 -march=native -fpermissive
+CPPFLAGS = -O2 -march=native -Wall
 LIBS = -lgmpxx -lgmp
 
 build/calc: src/main.cpp
