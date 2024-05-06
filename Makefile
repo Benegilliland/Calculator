@@ -1,8 +1,9 @@
 CXX = g++
-CPPFLAGS = -O2 -march=native
+CPPFLAGS = -O2 -march=native -fpermissive
+LIBS = -lgmpxx -lgmp
 
 build/calc: src/main.cpp
-	$(CXX) $(CPPFLAGS) -o build/calc src/main.cpp
+	$(CXX) $(CPPFLAGS) -o build/calc src/main.cpp $(LIBS)
 
 .PHONY: clean run
 

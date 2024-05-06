@@ -3,18 +3,19 @@
 #include <stack>
 #include <cctype>
 #include <cmath>
+#include <gmpxx.h>
 
 /*
 To-do:
-- arbitrary precision
 - add support for decimal numbers
 - add scale variable
 - add GUI
 - add constants (e, pi) 
 - add logarithm function
+- make code safer (e.g., check stack before popping)
 */
 
-typedef double number;
+typedef mpz_class number;
 typedef number (*unary_operation)(number);
 typedef number (*binary_operation)(number, number);
 
@@ -31,16 +32,20 @@ std::string infix_to_postfix(std::string);
 number postfix_calculate(std::string);
 const Operator *isoperator(char);
 
-number factorial(number);
+number add(number, number);
+number subtract(number, number);
+number multiply(number, number);
+number divide(number, number);
+number fact(number);
 
 const Operator operator_list[] = {
-  {'+', 1, nullptr, [](number left, number right) {return left + right;} },
-  {'-', 1, nullptr, [](number left, number right) {return left - right;} },
-  {'*', 2, nullptr, [](number left, number right) {return left * right;} },
-  {'/', 2, nullptr, [](number left, number right) {return left / right;} },
-  {'^', 3, nullptr, [](number left, number right) {return (number)pow(left, right);} },
-  {'l', 4, nullptr, [](number left, number right) {return (number)(log(left) / log(left));} },
-  {'!', 4, factorial, nullptr},
+  {'+', 1, nullptr, add },
+  {'-', 1, nullptr, subtract },
+  {'*', 2, nullptr, multiply },
+  {'/', 2, nullptr, divide },
+  //{'^', 3, nullptr, [](number left, number right) {return (number)pow(left, right);} },
+  //{'l', 4, nullptr, [](number left, number right) {return (number)(log(left) / log(left));} },
+  {'!', 4, fact, nullptr},
   {'(', 0},
   {')', 1}
 };
@@ -57,11 +62,36 @@ main()
     postfix = infix_to_postfix(infix);
     result = postfix_calculate(postfix);
 
-    std::cout << infix_to_postfix(infix) << '\n';
+    //std::cout << infix_to_postfix(infix) << '\n';
     std::cout << result << '\n';
   }
 
   return 0;
+}
+
+number add(number left, number right)
+{
+  return left + right;
+}
+
+number multiply(number left, number right)
+{
+  return left * right;
+}
+
+number subtract(number left, number right)
+{
+  return left - right;
+}
+
+number divide(number left, number right)
+{
+  return left / right;
+}
+
+number fact(number n)
+{
+  return factorial(n);
 }
 
 const Operator * 
@@ -73,11 +103,6 @@ isoperator(char c)
   }
 
   return nullptr;
-}
-
-number factorial(number n)
-{
-  return (n <= 1 ? 1 : n * factorial(n - 1));
 }
 
 std::string
@@ -122,7 +147,7 @@ infix_to_postfix(std::string infix)
 number
 postfix_calculate(std::string postfix)
 {
-  long long num = 0;
+  mpz_class num = 0;
   bool digit = false;
   static std::stack<number> nums;
 
