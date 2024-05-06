@@ -49,9 +49,8 @@ int
 main() 
 {
   std::string infix;
-  getline(std::cin, infix);
 
-  while (infix.length() > 0) {
+  while (std::getline(std::cin, infix)) {
     std::string postfix;
     number result;
     
@@ -60,8 +59,6 @@ main()
 
     std::cout << infix_to_postfix(infix) << '\n';
     std::cout << result << '\n';
-    
-    getline(std::cin, infix);
   }
 
   return 0;
