@@ -1,6 +1,7 @@
 #include "parse.h"
 #include <stack>
 #include <iostream>
+#include "constant.h"
 
 static std::stack<const Operator *> ops;
 static std::stack<node> nodes;
@@ -24,6 +25,17 @@ void parse_number(std::string &token)
   bignum *num = new bignum(token);
   node newNode = new s_token{nullptr, num, nullptr, nullptr};
   nodes.push(newNode);
+}
+
+void parse_alpha(std::string &token)
+{
+  if (isconstant(token)) {
+    const constant *cnst = getconstant(token);
+
+    bignum *num = new bignum(cnst->value);
+    node newNode = new s_token{nullptr, num, nullptr, nullptr};
+    nodes.push(newNode);
+  }
 }
 
 void output_operator(const Operator *op)
@@ -82,7 +94,7 @@ void parse_token(std::string &token, char type)
       parse_number(token);
       break;
     case 'a':
-      //parse_alpha();
+      parse_alpha(token);
       break;
     case 'o':
       parse_operator(token);
@@ -145,4 +157,6 @@ bignum postfix_calculate(node n)
     return *n->num;
   else if (n->op) 
     return n->op->op(postfix_calculate(n->left), postfix_calculate(n->right));
+
+  return 0;
 }
